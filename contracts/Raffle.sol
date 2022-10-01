@@ -9,6 +9,7 @@ import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 error Raffle__NotEnoughETHEntered();
 error Raffle__TransferFailed();
 error Raffle__NotOpen();
+error Raffle__UpkeepNotNeeded(uint256 currentBalance, uint256 numPlayers, uint256 raffleState);
 
 abstract contract Raffle is VRFConsumerBaseV2, AutomationCompatible {
     /* Type declarations */
@@ -82,7 +83,7 @@ abstract contract Raffle is VRFConsumerBaseV2, AutomationCompatible {
     function checkUpkeep(
         bytes calldata /* checkData */
     )
-        external
+        public
         override
         returns (
             bool upkeepNeeded,
@@ -96,9 +97,15 @@ abstract contract Raffle is VRFConsumerBaseV2, AutomationCompatible {
         upkeepNeeded = (isOpen && hasBalance && hasPlayers && timePassed);
     }
 
-    function requestRandomWinner() external {
-        s_raffleState = RaffleState.CALCULATING;
+    function performUpkeep(
+        bytes calldata /* performData */
+    ) external {
+        (bool upkeepNeeded,) =  checkUpkeep("")
+        if (!upkeepNeeded) {
+            revert Raffle__UpkeepNotNeeded(address(this).balance, s_players.length, uint256(s_raffleState));
+        }
 
+        s_raffleState = RaffleState.CALCULATING;
         uint256 requestId = i_vrfCoordinator.requestRandomWords(
             i_gasLane,
             i_subscriptionId,
@@ -115,10 +122,12 @@ abstract contract Raffle is VRFConsumerBaseV2, AutomationCompatible {
     ) internal override {
         uint256 indexOfWinner = randomWords[0] % s_players.length;
         address payable recentWinner = s_players[indexOfWinner];
+
         s_recentWinner = recentWinner;
         s_raffleState = RaffleState.OPEN;
         s_players = new address payable[](0);
-
+        s_lastTimeStamp = block.timestamp;
+        
         (bool success, ) = recentWinner.call{value: address(this).balance}("");
         if (!success) {
             revert Raffle__TransferFailed();
