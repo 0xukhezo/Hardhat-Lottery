@@ -9,7 +9,17 @@ import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 error Raffle__NotEnoughETHEntered();
 error Raffle__TransferFailed();
 error Raffle__NotOpen();
-error Raffle__UpkeepNotNeeded(uint256 currentBalance, uint256 numPlayers, uint256 raffleState);
+error Raffle__UpkeepNotNeeded(
+    uint256 currentBalance,
+    uint256 numPlayers,
+    uint256 raffleState
+);
+
+/** @title a Sample of Raffle Contract
+ * @author Alvaro Teran
+ * @notice This contract is for creating an untamperable decentralized smart contract
+ * @dev This implements Chainlink VRF V2 & Chainlink Keepers
+ */
 
 abstract contract Raffle is VRFConsumerBaseV2, AutomationCompatible {
     /* Type declarations */
@@ -100,9 +110,13 @@ abstract contract Raffle is VRFConsumerBaseV2, AutomationCompatible {
     function performUpkeep(
         bytes calldata /* performData */
     ) external {
-        (bool upkeepNeeded,) =  checkUpkeep("")
+        (bool upkeepNeeded, ) = checkUpkeep("");
         if (!upkeepNeeded) {
-            revert Raffle__UpkeepNotNeeded(address(this).balance, s_players.length, uint256(s_raffleState));
+            revert Raffle__UpkeepNotNeeded(
+                address(this).balance,
+                s_players.length,
+                uint256(s_raffleState)
+            );
         }
 
         s_raffleState = RaffleState.CALCULATING;
@@ -127,7 +141,7 @@ abstract contract Raffle is VRFConsumerBaseV2, AutomationCompatible {
         s_raffleState = RaffleState.OPEN;
         s_players = new address payable[](0);
         s_lastTimeStamp = block.timestamp;
-        
+
         (bool success, ) = recentWinner.call{value: address(this).balance}("");
         if (!success) {
             revert Raffle__TransferFailed();
