@@ -21,7 +21,7 @@ error Raffle__UpkeepNotNeeded(
  * @dev This implements Chainlink VRF V2 & Chainlink Keepers
  */
 
-abstract contract Raffle is VRFConsumerBaseV2, AutomationCompatible {
+contract Raffle is VRFConsumerBaseV2, AutomationCompatible {
     /* Type declarations */
     enum RaffleState {
         OPEN,
@@ -60,8 +60,8 @@ abstract contract Raffle is VRFConsumerBaseV2, AutomationCompatible {
         uint32 callbackGasLimit,
         uint256 interval
     ) VRFConsumerBaseV2(vrfCoordinatorV2) {
-        i_entranceFee = entranceFee;
         i_vrfCoordinator = VRFCoordinatorV2Interface(vrfCoordinatorV2);
+        i_entranceFee = entranceFee;
         i_gasLane = gasLane;
         i_subscriptionId = subscriptionId;
         i_callbackGasLimit = callbackGasLimit;

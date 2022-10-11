@@ -33,6 +33,7 @@
         "coverage": "hardhat coverage"
     },
     "dependencies": {
-        "@chainlink/contracts": "^0.5.1"
+        "@chainlink/contracts": "^0.5.1",
+        "hardhat-ethers": "^1.0.1"
     }
 }
