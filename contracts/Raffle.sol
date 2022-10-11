@@ -51,6 +51,7 @@ abstract contract Raffle is VRFConsumerBaseV2, AutomationCompatible {
     event RequestedRaffleWinner(uint256 indexed requestId);
     event WinnerPicked(address indexed winner);
 
+    /* Functions */
     constructor(
         address vrfCoordinatorV2,
         uint256 entranceFee,
@@ -91,7 +92,7 @@ abstract contract Raffle is VRFConsumerBaseV2, AutomationCompatible {
      */
 
     function checkUpkeep(
-        bytes calldata /* checkData */
+        bytes memory /* checkData */
     )
         public
         override
@@ -161,5 +162,21 @@ abstract contract Raffle is VRFConsumerBaseV2, AutomationCompatible {
 
     function getRecentWinner() public view returns (address) {
         return s_recentWinner;
+    }
+
+    function getRaffleState() public view returns (RaffleState) {
+        return s_raffleState;
+    }
+
+    function getNumWords() public pure returns (uint256) {
+        return NUM_WORDS;
+    }
+
+    function getRequestConfirmations() public pure returns (uint256) {
+        return REQUEST_CONFIRMATION;
+    }
+
+    function getNumPlayers() public view returns (uint256) {
+        return s_players.length;
     }
 }
