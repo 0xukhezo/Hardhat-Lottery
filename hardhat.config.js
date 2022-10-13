@@ -33,15 +33,23 @@ module.exports = {
         },
     },
     networks: {
-        hardhat: {
-            chainId: 31337,
-            blockConfirmations: 1,
-        },
         goerli: {
             chainId: 5,
             blockConfirmations: 6,
             url: GOERLI_URL_RPC,
             accounts: [PRIVATE_KEY_ACCOUNT_GOERLI],
         },
+        hardhat: {
+            chainId: 31337,
+            blockConfirmations: 1,
+        },
+    },
+    gasReporter: {
+        enabled: true,
+        outputFile: "gas-report.txt",
+        noColors: true,
+        currency: "USD",
+        coinmarketcap: COINMARKETCAP_API_KEY,
+        token: "ETH",
     },
 }

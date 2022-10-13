@@ -50,6 +50,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
         callbackGasLimit,
         interval,
     ]
+
     const raffle = await deploy("Raffle", {
         from: deployer,
         args: arguments,
@@ -57,7 +58,10 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
         waitConfirmations: network.config.blockConfirmations || 1,
     })
 
-    if (developmentChains.includes(network.name) && process.env.ETHERSCAN_API) {
+    if (
+        !developmentChains.includes(network.name) &&
+        process.env.ETHERSCAN_API
+    ) {
         log("Verifying...")
         await verify(raffle.address, arguments)
     }
