@@ -1,4 +1,4 @@
-const { assert } = require("chai")
+const { assert, expect } = require("chai")
 const { getNamedAccounts, deployments, ethers, network } = require("hardhat")
 const {
     developmentChains,
@@ -8,11 +8,12 @@ const {
 !developmentChains.includes(network.name)
     ? describe.skip
     : describe("Raffle Unit Test", async function () {
-          let raffle, vrfCoordinatorV2Mock
+          let raffle, vrfCoordinatorV2Mock, raffleEntranceFee, deployer
           const chainId = network.config.chainId
 
           beforeEach(async function () {
-              const { deployer } = await getNamedAccounts()
+              deployer = (await getNamedAccounts()).deployer
+
               const contractAddress = await deployments.fixture(["all"])
               raffle = await ethers.getContractAt(
                   "Raffle",
@@ -24,6 +25,7 @@ const {
                   contractAddress.VRFCoordinatorV2Mock.address,
                   deployer.address
               )
+              raffleEntranceFee = raffle.getEntraenceFee()
           })
 
           describe("constructor", async function () {
@@ -35,6 +37,24 @@ const {
                       interval.toString(),
                       networkConfig[chainId]["interval"]
                   )
+              })
+          })
+
+          describe("enterRaffle", async function () {
+              it("Revert when you don´t pay enough", async function () {
+                  await expect(raffle.enterRaffle()).to.be.revertedWith(
+                      "Raffle__NotEnoughETHEntered"
+                  )
+              })
+              it("Records players when they enter the raffle", async function () {
+                  await raffle.enterRaffle({ value: raffleEntranceFee })
+                  const playersFromContract = await raffle.getPlayers(0)
+                  assert.equal(playersFromContract, deployer)
+              })
+              it("Emit event on enter", async function () {
+                  await expect(
+                      raffle.enterRaffle({ value: raffleEntranceFee })
+                  ).to.emit(raffle, "RaffleEnter")
               })
           })
       })
