@@ -9,7 +9,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     const { deployer } = await getNamedAccounts()
     const chainId = network.config.chainId
 
-    let vrfCoordinatorV2Address, subscriptionId
+    let vrfCoordinatorV2Address, subscriptionId, vrfCoordinatorV2Mock
     const entranceFee = networkConfig[chainId]["entranceFee"]
     const gasLane = networkConfig[chainId]["gasLane"]
     const callbackGasLimit = networkConfig[chainId]["callbackGasLimit"]
@@ -19,7 +19,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
         let vrfCoordinatorV2MockContract = await hre.ethers.getContractFactory(
             "VRFCoordinatorV2Mock"
         )
-        let vrfCoordinatorV2Mock = vrfCoordinatorV2MockContract.attach(
+        vrfCoordinatorV2Mock = vrfCoordinatorV2MockContract.attach(
             "0x5FbDB2315678afecb367f032d93F642f64180aa3"
         )
 
@@ -57,6 +57,11 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
         log: true,
         waitConfirmations: network.config.blockConfirmations || 1,
     })
+
+    if (developmentChains.includes(network.name)) {
+        await vrfCoordinatorV2Mock.addConsumer(subscriptionId, raffle.address)
+        log("Consumer is added")
+    }
 
     if (
         !developmentChains.includes(network.name) &&
