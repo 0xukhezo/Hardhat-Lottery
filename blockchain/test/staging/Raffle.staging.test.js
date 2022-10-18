@@ -60,7 +60,6 @@ developmentChains.includes(network.name)
                               reject(error)
                           }
                       })
-                      // Then entering the raffle
                       console.log("Entering Raffle...")
                       const tx = await raffle.enterRaffle({
                           value: raffleEntranceFee,
@@ -69,8 +68,6 @@ developmentChains.includes(network.name)
                       console.log("Ok, time to wait...")
                       const winnerStartingBalance =
                           await accounts[0].getBalance()
-
-                      // and this code WONT complete until our listener has finished listening!
                   })
               })
           })
