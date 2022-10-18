@@ -2,7 +2,8 @@ import React, {useEffect} from 'react'
 import {useMoralis} from "react-moralis"
 
 function Navbar() {
-  const { enableWeb3, account, isWeb3Enabled  } = useMoralis()
+  const { enableWeb3, account, isWeb3Enabled, Moralis, deactivateWeb3 } = useMoralis()
+
    useEffect(() => {
     if(isWeb3Enabled) return 
     if(typeof window != "undefined"){
@@ -11,6 +12,16 @@ function Navbar() {
       }
     }
    }, [isWeb3Enabled])
+
+   useEffect(() => {
+     Moralis.onAccountChanged((account) =>{
+      if(account== null){
+        window.localStorage.removeItem("connected")
+        deactivateWeb3()
+      }
+     })
+   }, [])
+   
    
   return (
     <div>
