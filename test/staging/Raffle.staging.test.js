@@ -1,26 +1,35 @@
 const { assert, expect } = require("chai")
-const { getNamedAccounts, deployments, ethers, network } = require("hardhat")
-const {
-    developmentChains,
-    networkConfig,
-} = require("../../helper-hardhat-config")
+const { getNamedAccounts, ethers, network } = require("hardhat")
+const { developmentChains } = require("../../helper-hardhat-config")
 
 developmentChains.includes(network.name)
     ? describe.skip
-    : describe("Raffle Unit Test", async function () {
+    : describe("Raffle Staging Tests", function () {
           let raffle, raffleEntranceFee, deployer
 
           beforeEach(async function () {
               deployer = (await getNamedAccounts()).deployer
-              raffle = raffleContract.connect(player)
+              const contractAddress = await deployments.fixture(["all"])
+              console.log("Getting the contract...")
+              raffle = await ethers.getContractAt(
+                  "Raffle",
+                  contractAddress.Raffle.address,
+                  deployer.address
+              )
               raffleEntranceFee = await raffle.getEntraenceFee()
           })
-          describe("fullfillRandomWords", function () {
-              it("Works with live Chainlink Keepers and Chainlink VRF, we got a random winner of the raffle", async () => {
+
+          describe("fulfillRandomWords", function () {
+              it("works with live Chainlink Keepers and Chainlink VRF, we get a random winner", async function () {
+                  // enter the raffle
+                  console.log("Setting up test...")
                   const startingTimeStamp = await raffle.getLastTimeStramp()
                   const accounts = await ethers.getSigners()
 
+                  console.log("Setting up Listener...")
                   await new Promise(async (resolve, reject) => {
+                      // setup listener before we enter the raffle
+                      // Just in case the blockchain moves REALLY fast
                       raffle.once("WinnerPicked", async () => {
                           console.log("WinnerPicked event fired!")
                           try {
@@ -29,8 +38,9 @@ developmentChains.includes(network.name)
                               const raffleState = await raffle.getRaffleState()
                               const winnerEndingBalance =
                                   await accounts[0].getBalance()
-                              const endingTimeStramp =
+                              const endingTimeStamp =
                                   await raffle.getLastTimeStramp()
+
                               await expect(raffle.getPlayer(0)).to.be.reverted
                               assert.equal(
                                   recentWinner.toString(),
@@ -43,17 +53,24 @@ developmentChains.includes(network.name)
                                       .add(raffleEntranceFee)
                                       .toString()
                               )
-                              assert(endingTimeStramp > startingTimeStamp)
+                              assert(endingTimeStamp > startingTimeStamp)
                               resolve()
-                          } catch (e) {
-                              console.log(e)
-                              reject(e)
+                          } catch (error) {
+                              console.log(error)
+                              reject(error)
                           }
-
-                          await raffle.enterRaffle({ value: raffleEntranceFee })
-                          const winnerStartingBalance =
-                              await accounts[0].getBalance()
                       })
+                      // Then entering the raffle
+                      console.log("Entering Raffle...")
+                      const tx = await raffle.enterRaffle({
+                          value: raffleEntranceFee,
+                      })
+                      await tx.wait(1)
+                      console.log("Ok, time to wait...")
+                      const winnerStartingBalance =
+                          await accounts[0].getBalance()
+
+                      // and this code WONT complete until our listener has finished listening!
                   })
               })
           })

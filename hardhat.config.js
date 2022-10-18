@@ -44,6 +44,11 @@ module.exports = {
             blockConfirmations: 1,
         },
     },
+    etherscan: {
+        apiKey: {
+            goerli: ETHERSCAN_API_KEY,
+        },
+    },
     gasReporter: {
         enabled: true,
         outputFile: "gas-report.txt",
@@ -53,6 +58,6 @@ module.exports = {
         token: "ETH",
     },
     mocha: {
-        timeout: 200000,
+        timeout: 700000,
     },
 }
