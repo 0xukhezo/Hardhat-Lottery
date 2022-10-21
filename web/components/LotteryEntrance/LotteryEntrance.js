@@ -2,10 +2,19 @@ import React, { useEffect, useState } from "react"
 import { useWeb3Contract, useMoralis } from "react-moralis"
 import { abi, contractAddresses } from "../../constants"
 import { ethers } from "ethers"
+import { useNotification } from "web3uikit"
+import BellIcon from "react-bell-icon"
 
 function LotteryEntrance() {
     const { chainId: chainIdHex, isWeb3Enabled } = useMoralis()
-    const [entranceFee, setEntranceFee] = useState()
+    const dispatch = useNotification()
+
+    const [entranceFee, setEntranceFee] = useState("0")
+    const [players, setPlayers] = useState("0")
+    const [recentWinner, setRecentWinner] = useState()
+
+    console.log(players, recentWinner)
+
     const chainId = parseInt(chainIdHex)
     const raffleAddress =
         chainId in contractAddresses ? contractAddresses[chainId][0] : null
@@ -17,6 +26,20 @@ function LotteryEntrance() {
         params: {},
     })
 
+    const { runContractFunction: getNumPlayers } = useWeb3Contract({
+        abi: abi,
+        contractAddress: raffleAddress,
+        functionName: "getNumPlayers",
+        params: {},
+    })
+
+    const { runContractFunction: getRecentWinner } = useWeb3Contract({
+        abi: abi,
+        contractAddress: raffleAddress,
+        functionName: "getRecentWinner",
+        params: {},
+    })
+
     const { runContractFunction: enterRaffle } = useWeb3Contract({
         abi: abi,
         contractAddress: raffleAddress,
@@ -25,9 +48,29 @@ function LotteryEntrance() {
         params: {},
     })
 
-    async function updateUIValues() {
+    const updateUIValues = async () => {
         const entranceFeeFromCall = (await getEntraenceFee()).toString()
+        const playersFromCall = (await getNumPlayers()).toString()
+        const recentWinnerFromCall = await getRecentWinner()
         setEntranceFee(entranceFeeFromCall)
+        setPlayers(playersFromCall)
+        setRecentWinner(recentWinnerFromCall)
+    }
+
+    const handleSuccess = async (tx) => {
+        await tx.wait(1)
+        handleNewNotification(tx)
+        updateUIValues()
+    }
+
+    const handleNewNotification = () => {
+        dispatch({
+            type: "success",
+            message: "Transaction Complete",
+            title: "Tx Notification",
+            position: "topR",
+            icon: <BellIcon width="15" active={true} animate={true} />,
+        })
     }
 
     useEffect(() => {
@@ -38,10 +81,22 @@ function LotteryEntrance() {
 
     return (
         <>
-            {raffleAddress && entranceFee !== undefined ? (
+            {raffleAddress ? (
                 <div>
-                    Entrance Fee {ethers.utils.formatEther(entranceFee)} ETH
-                    <button onClick={async () => await enterRaffle()}>
+                    <p>
+                        Entrance Fee: {ethers.utils.formatEther(entranceFee)}
+                        ETH
+                    </p>
+                    <p>Numer of players: {players} </p>
+                    <p>Recent Winner: {recentWinner}</p>
+                    <button
+                        onClick={async () =>
+                            await enterRaffle({
+                                onSuccess: handleSuccess,
+                                onError: (error) => console.log(error),
+                            })
+                        }
+                    >
                         Enter Raffle
                     </button>
                 </div>
