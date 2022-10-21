@@ -3,7 +3,6 @@ import { useWeb3Contract, useMoralis } from "react-moralis"
 import { abi, contractAddresses } from "../../constants"
 import { ethers } from "ethers"
 import { useNotification } from "web3uikit"
-import BellIcon from "react-bell-icon"
 
 function LotteryEntrance() {
     const { chainId: chainIdHex, isWeb3Enabled } = useMoralis()
@@ -69,7 +68,6 @@ function LotteryEntrance() {
             message: "Transaction Complete",
             title: "Tx Notification",
             position: "topR",
-            icon: <BellIcon width="15" active={true} animate={true} />,
         })
     }
 
