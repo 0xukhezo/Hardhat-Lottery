@@ -20,22 +20,37 @@ async function updateAbi() {
 
 async function updateContractAddresses() {
     const chainId = network.config.chainId.toString()
-    const contractAddress = await deployments.fixture(["raffle"])
-    const raffle = await ethers.getContractAt(
-        "Raffle",
-        contractAddress.Raffle.address
+    let chainIdNetwork
+
+    switch (chainId) {
+        case "5":
+            chainIdNetwork = "goerli"
+            break
+        default:
+            chainIdNetwork = "localhost"
+            break
+    }
+
+    const ADDRESS_FILE_RAFFLE = `../blockchain/deployments/${chainIdNetwork}/Raffle.json`
+
+    const contractDeployedAddress = JSON.parse(
+        fs.readFileSync(ADDRESS_FILE_RAFFLE, "utf8")
     )
-    console.log(raffle)
+
     const contractAddresses = JSON.parse(
         fs.readFileSync(FRONT_END_ADDRESSES_FILE_PATH, "utf8")
     )
 
     if (chainId in contractAddresses) {
-        if (!contractAddresses[chainId].includes(raffle.address)) {
-            contractAddresses[chainId].push(raffle.address)
+        if (
+            !contractAddresses[chainId].includes(
+                contractDeployedAddress.address
+            )
+        ) {
+            contractAddresses[chainId].push(contractDeployedAddress.address)
         }
     } else {
-        contractAddresses[chainId] = [raffle.address]
+        contractAddresses[chainId] = [contractDeployedAddress.address]
     }
     fs.writeFileSync(
         FRONT_END_ADDRESSES_FILE_PATH,

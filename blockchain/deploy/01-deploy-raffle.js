@@ -57,7 +57,6 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
         log: true,
         waitConfirmations: network.config.blockConfirmations || 1,
     })
-
     if (developmentChains.includes(network.name)) {
         await vrfCoordinatorV2Mock.addConsumer(subscriptionId, raffle.address)
         log("Consumer is added")
