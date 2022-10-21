@@ -31,10 +31,10 @@ async function updateContractAddresses() {
             break
     }
 
-    const ADDRESS_FILE_RAFFLE = `../blockchain/deployments/${chainIdNetwork}/Raffle.json`
+    const DEPLOYED_ADDRESS_FILE_RAFFLE = `../blockchain/deployments/${chainIdNetwork}/Raffle.json`
 
     const contractDeployedAddress = JSON.parse(
-        fs.readFileSync(ADDRESS_FILE_RAFFLE, "utf8")
+        fs.readFileSync(DEPLOYED_ADDRESS_FILE_RAFFLE, "utf8")
     )
 
     const contractAddresses = JSON.parse(
