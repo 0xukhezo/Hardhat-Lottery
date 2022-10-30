@@ -46,7 +46,7 @@ function ManualConnectButton() {
                     }}
                     disabled={isWeb3EnableLoading}
                 >
-                    Connect
+                    Connect your wallet
                 </button>
             )}
         </div>
