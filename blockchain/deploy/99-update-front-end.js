@@ -1,4 +1,4 @@
-const { ethers, network } = require("hardhat")
+const { network } = require("hardhat")
 const fs = require("fs")
 
 const FRONT_END_ADDRESSES_FILE_PATH = "../web/constants/contractAddresses.json"
