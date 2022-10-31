@@ -1,8 +1,9 @@
 const { network } = require("hardhat")
+const {
+    frontEndContractsFile,
+    frontEndAbiFile,
+} = require("../helper-hardhat-config")
 const fs = require("fs")
-
-const FRONT_END_ADDRESSES_FILE_PATH = "../web/constants/contractAddresses.json"
-const FRONT_END_ABI_FILE_PATH = "../web/constants/abi.json"
 
 module.exports = async () => {
     if (process.env.UPDATE_FRONT_END) {
@@ -15,7 +16,7 @@ module.exports = async () => {
 
 async function updateAbi() {
     const raffle = await artifacts.readArtifact("Raffle")
-    fs.writeFileSync(FRONT_END_ABI_FILE_PATH, JSON.stringify(raffle.abi))
+    fs.writeFileSync(frontEndAbiFile, JSON.stringify(raffle.abi))
 }
 
 async function updateContractAddresses() {
@@ -31,14 +32,14 @@ async function updateContractAddresses() {
             break
     }
 
-    const DEPLOYED_ADDRESS_FILE_RAFFLE = `../blockchain/deployments/${chainIdNetwork}/Raffle.json`
+    const DEPLOYED_ADDRESS_FILE_RAFFLE = `./deployments/${chainIdNetwork}/Raffle.json`
 
     const contractDeployedAddress = JSON.parse(
         fs.readFileSync(DEPLOYED_ADDRESS_FILE_RAFFLE, "utf8")
     )
 
     const contractAddresses = JSON.parse(
-        fs.readFileSync(FRONT_END_ADDRESSES_FILE_PATH, "utf8")
+        fs.readFileSync(frontEndContractsFile, "utf8")
     )
 
     if (chainId in contractAddresses) {
@@ -52,9 +53,6 @@ async function updateContractAddresses() {
     } else {
         contractAddresses[chainId] = [contractDeployedAddress.address]
     }
-    fs.writeFileSync(
-        FRONT_END_ADDRESSES_FILE_PATH,
-        JSON.stringify(contractAddresses)
-    )
+    fs.writeFileSync(frontEndContractsFile, JSON.stringify(contractAddresses))
 }
 module.exports.tags = ["all", "frontend"]
